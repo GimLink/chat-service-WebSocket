@@ -8,6 +8,11 @@ spring:
     password: service_user
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
   config:
     import:
       - application-secret.yml
@@ -21,6 +26,12 @@ spring:
             client-secret: ${client-secret}
             scope:
               - profile_nickname
+              - account_email
+              - name
+              - gender
+              - birthday
+              - birthyear
+              - phone_number
             redirect-uri: "http://localhost:8080/login/oauth2/code/kakao"
             client-name: kakao
             authorization-grant-type: authorization_code
