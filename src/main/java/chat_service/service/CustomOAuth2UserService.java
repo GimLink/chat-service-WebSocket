@@ -47,8 +47,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
   }
 
   private LocalDate getBirthDay(Map<String, Object> attributeMap) {
-    String birthYear = (String) attributeMap.get("birth_year");
-    String birthDay = (String) attributeMap.get("birth_day");
+    String birthYear = (String) attributeMap.get("birthyear");
+    String birthDay = (String) attributeMap.get("birthday");
 
     return LocalDate.parse(birthYear + birthDay, DateTimeFormatter.BASIC_ISO_DATE);
   }
