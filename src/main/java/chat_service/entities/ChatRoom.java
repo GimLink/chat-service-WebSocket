@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,5 +32,20 @@ public class ChatRoom {
 
   @OneToMany(mappedBy = "chatRoom")
   Set<MemberChatRoomMapping> memberChatRoomMappingsSet;
+
+  public MemberChatRoomMapping addMember(Member member){
+    if (this.getMemberChatRoomMappingsSet() == null) {
+      this.memberChatRoomMappingsSet = new HashSet<>();
+    }
+
+    MemberChatRoomMapping memberChatRoomMapping = MemberChatRoomMapping.builder()
+        .member(member)
+        .chatRoom(this)
+        .build();
+
+    this.memberChatRoomMappingsSet.add(memberChatRoomMapping);
+
+    return memberChatRoomMapping;
+  }
 
 }

@@ -1,5 +1,6 @@
 package chat_service.controller;
 
+import chat_service.dto.ChatRoomDto;
 import chat_service.entities.ChatRoom;
 import chat_service.service.ChatService;
 import chat_service.vos.CustomOAuth2User;
@@ -24,9 +25,9 @@ public class ChatController {
   private final ChatService chatService;
 
   @PostMapping
-  public ChatRoom createChatRoom(@AuthenticationPrincipal CustomOAuth2User user,
+  public ChatRoomDto createChatRoom(@AuthenticationPrincipal CustomOAuth2User user,
       @RequestParam String title) {
-    return chatService.createChatRoom(user.getMember(), title);
+    return ChatRoomDto.fromEntity(chatService.createChatRoom(user.getMember(), title));
   }
 
   @PostMapping("/{chatRoomId}")
@@ -41,8 +42,9 @@ public class ChatController {
   }
 
   @GetMapping
-  public List<ChatRoom> getChatRoomList(@AuthenticationPrincipal CustomOAuth2User user) {
-    return chatService.getChatRoomList(user.getMember());
+  public List<ChatRoomDto> getChatRoomList(@AuthenticationPrincipal CustomOAuth2User user) {
+    List<ChatRoom> chatRoomList = chatService.getChatRoomList(user.getMember());
+    return chatRoomList.stream().map(ChatRoomDto::fromEntity).toList();
   }
 
 }

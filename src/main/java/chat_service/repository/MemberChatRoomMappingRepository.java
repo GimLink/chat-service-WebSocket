@@ -8,7 +8,7 @@ public interface MemberChatRoomMappingRepository extends JpaRepository<MemberCha
 
   public Boolean existsByMemberIdAndChatRoomId(Long memberId, Long chatRoomId);
 
-  public Boolean deleteByMemberIdAndChatRoomId(Long memberId, Long chatRoomId);
+  public void deleteByMemberIdAndChatRoomId(Long memberId, Long chatRoomId);
 
   public List<MemberChatRoomMapping> findAllByMemberId(Long memberId);
 

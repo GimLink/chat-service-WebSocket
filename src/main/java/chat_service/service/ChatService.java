@@ -10,6 +10,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,10 +27,7 @@ public class ChatService {
         .build();
 
     chatRoom = chatRoomRepository.save(chatRoom);
-    MemberChatRoomMapping memberChatRoomMapping = MemberChatRoomMapping.builder()
-        .member(member)
-        .chatRoom(chatRoom)
-        .build();
+    MemberChatRoomMapping memberChatRoomMapping = chatRoom.addMember(member);
 
     memberChatRoomMappingRepository.save(memberChatRoomMapping);
 
@@ -53,6 +51,7 @@ public class ChatService {
     return true;
   }
 
+  @Transactional
   public Boolean leaveChatRoom(Member member, Long chatRoomId) {
     if (!memberChatRoomMappingRepository.existsByMemberIdAndChatRoomId(member.getId(),
         chatRoomId)) {
