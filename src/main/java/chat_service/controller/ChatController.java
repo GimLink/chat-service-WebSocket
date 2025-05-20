@@ -1,7 +1,9 @@
 package chat_service.controller;
 
+import chat_service.dto.ChatMessage;
 import chat_service.dto.ChatRoomDto;
 import chat_service.entities.ChatRoom;
+import chat_service.entities.Message;
 import chat_service.service.ChatService;
 import chat_service.vos.CustomOAuth2User;
 import java.util.List;
@@ -45,6 +47,14 @@ public class ChatController {
   public List<ChatRoomDto> getChatRoomList(@AuthenticationPrincipal CustomOAuth2User user) {
     List<ChatRoom> chatRoomList = chatService.getChatRoomList(user.getMember());
     return chatRoomList.stream().map(ChatRoomDto::fromEntity).toList();
+  }
+
+  @GetMapping("/{chatRoomId}/messages")
+  public List<ChatMessage> getMessageList(@PathVariable Long chatRoomId) {
+    List<Message> messageList = chatService.getMessagesList(chatRoomId);
+    return messageList.stream().map(message -> new ChatMessage(message.getMember().getNickname(), message.getText()))
+        .toList();
+
   }
 
 }

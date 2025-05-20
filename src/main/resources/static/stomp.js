@@ -114,6 +114,7 @@ let subscription;
 function enterChatRoom(chatRoomId, newMember) {
   $("#chatroom-id").val(chatRoomId);
   $("#messages").html("");
+  showMessages(chatRoomId);
   $("#conversation").show();
   $("#send").prop("disabled", false);
   $("#leave").prop("disabled", false);
@@ -134,6 +135,24 @@ function enterChatRoom(chatRoomId, newMember) {
       )
     })
   }
+}
+
+function showMessages(chatRoomId) {
+  $.ajax({
+    type: 'GET',
+    dataType: 'json',
+    url: '/chats/' + chatRoomId + '/messages',
+    success: function(data) {
+      console.log('data: ', data);
+      for (let i = 0; i < data.length; i++) {
+        showMessage(data[i]);
+      }
+    },
+    error: function(request, status, error) {
+      console.log('request: ', request);
+      console.log('error: ', error);
+    }
+  })
 }
 
 function joinChatRoom(chatRoomId) {
