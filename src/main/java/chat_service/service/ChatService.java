@@ -37,12 +37,15 @@ public class ChatService {
     return chatRoom;
   }
 
-  public Boolean joinChatRoom(Member member, Long chatRoomId) {
-    if (memberChatRoomMappingRepository.existsByMemberIdAndChatRoomId(member.getId(), chatRoomId)) {
-      log.info("{} already joined chat room {}", member.getName(), chatRoomId);
+  public Boolean joinChatRoom(Member member, Long newChatRoomId, Long currentChatRoomId) {
+    if (currentChatRoomId != null) {
+      updateLastCheckedAt(member, currentChatRoomId);
+    }
+    if (memberChatRoomMappingRepository.existsByMemberIdAndChatRoomId(member.getId(), newChatRoomId)) {
+      log.info("{} already joined chat room {}", member.getName(), newChatRoomId);
       return false;
     }
-    ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).orElseThrow();
+    ChatRoom chatRoom = chatRoomRepository.findById(newChatRoomId).orElseThrow();
 
     MemberChatRoomMapping memberChatRoomMapping = MemberChatRoomMapping.builder()
         .member(member)
@@ -52,6 +55,15 @@ public class ChatService {
     memberChatRoomMappingRepository.save(memberChatRoomMapping);
 
     return true;
+  }
+
+  private void updateLastCheckedAt(Member member, Long chatRoomId) {
+    MemberChatRoomMapping chatRoomMapping = memberChatRoomMappingRepository
+        .findByMemberIdAndChatRoomId(member.getId(), chatRoomId).orElseThrow();
+
+    chatRoomMapping.updateLastCheckedAt();
+
+    memberChatRoomMappingRepository.save(chatRoomMapping);
   }
 
   @Transactional
@@ -71,7 +83,13 @@ public class ChatService {
     List<MemberChatRoomMapping> memberChatRoomMappingList = memberChatRoomMappingRepository.findAllByMemberId(
         member.getId());
 
-    return memberChatRoomMappingList.stream().map(MemberChatRoomMapping::getChatRoom).toList();
+    return memberChatRoomMappingList.stream()
+        .map(mapping -> {
+          ChatRoom chatRoom = mapping.getChatRoom();
+          chatRoom.setHasNewMessage(messageRepository.existsByChatRoomIdAndCreatedAtAfter(chatRoom.getId(), mapping.getLastCheckedAt()));
+          return chatRoom;
+        })
+        .toList();
   }
 
   public Message saveMessage(Member member, Long chatRoomId, String text){

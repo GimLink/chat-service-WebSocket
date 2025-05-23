@@ -2,14 +2,17 @@ package chat_service.repository;
 
 import chat_service.entities.MemberChatRoomMapping;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MemberChatRoomMappingRepository extends JpaRepository<MemberChatRoomMapping, Long> {
 
-  public Boolean existsByMemberIdAndChatRoomId(Long memberId, Long chatRoomId);
+  Boolean existsByMemberIdAndChatRoomId(Long memberId, Long chatRoomId);
 
-  public void deleteByMemberIdAndChatRoomId(Long memberId, Long chatRoomId);
+  void deleteByMemberIdAndChatRoomId(Long memberId, Long chatRoomId);
 
-  public List<MemberChatRoomMapping> findAllByMemberId(Long memberId);
+  List<MemberChatRoomMapping> findAllByMemberId(Long memberId);
+
+  Optional<MemberChatRoomMapping> findByMemberIdAndChatRoomId(Long memberId, Long chatRoomId);
 
 }

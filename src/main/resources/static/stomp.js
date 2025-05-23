@@ -5,6 +5,10 @@ const stompClient = new StompJs.Client({
 stompClient.onConnect = (frame) => {
   setConnected(true);
   showChatRooms();
+  stompClient.subscribe('/sub/chats/news',
+      (chatMessage) => {
+        toggleNewMessageIcon(JSON.parse(chatMessage.body), true)
+      });
   console.log('Connected: ' + frame);
   stompClient.subscribe('/sub/chats', (chatMessage) => {
     showMessage(JSON.parse(chatMessage.body));
@@ -15,6 +19,14 @@ stompClient.onConnect = (frame) => {
         {'sender': $("#username").val(), 'message': "connected"})
   })
 };
+
+function toggleNewMessageIcon(chatRoomId, toggle) {
+  if (toggle){
+    $("#new_" + chatRoomId).show();
+  }else{
+    $("#new_" + chatRoomId).hide();
+  }
+}
 
 stompClient.onWebSocketError = (error) => {
   console.error('Error with websocket', error);
@@ -102,11 +114,20 @@ function renderChatRoom(chatrooms) {
   for (let i = 0; i < chatrooms.length; i++) {
     $("#chatroom-list").append(
         "<tr onclick= 'joinChatRoom(" + chatrooms[i].id + ")'><td>"
-        +chatrooms[i].id + "</td><td>" + chatrooms[i].title + "</td><td>"
+        +chatrooms[i].id + "</td><td>" + chatrooms[i].title + "<img src='new.png' id='new_" + chatrooms[i].id +"' style='display: "
+        + getDisplayValue(chatrooms[i].hasNewMessage) + "'</td><td>"
         +chatrooms[i].memberCount + "</td><td>" + chatrooms[i].createdAt
         + "</td></tr>"
     );
   }
+}
+
+function getDisplayValue(hasNewMessage) {
+  if (hasNewMessage) {
+    return "inline";
+  }
+
+  return "none";
 }
 
 let subscription;
@@ -118,6 +139,7 @@ function enterChatRoom(chatRoomId, newMember) {
   $("#conversation").show();
   $("#send").prop("disabled", false);
   $("#leave").prop("disabled", false);
+  toggleNewMessageIcon(chatRoomId, false);
 
   if (subscription != undefined) {
     subscription.unsubscribe();
@@ -156,10 +178,12 @@ function showMessages(chatRoomId) {
 }
 
 function joinChatRoom(chatRoomId) {
+  let currentChatRoomId = $("#chatroom-id").val();
+
   $.ajax({
     type: 'POST',
     dataType: 'json',
-    url: '/chats/' + chatRoomId,
+    url: '/chats/' + chatRoomId + getRequestParam(currentChatRoomId),
     success: function(data) {
       console.log('data: ', data)
       enterChatRoom(chatRoomId, data);
@@ -171,6 +195,12 @@ function joinChatRoom(chatRoomId) {
   })
 }
 
+function getRequestParam(currentChatRoomId) {
+  if (currentChatRoomId == "") {
+    return "";
+  }
+  return "?currentChatRoomId=" + currentChatRoomId;
+}
 function leaveChatRoom() {
   let chatRoomId = $("#chatroom-id").val();
   $.ajax({
