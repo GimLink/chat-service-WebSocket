@@ -3,18 +3,15 @@ package chat_service.vos;
 import chat_service.entities.Member;
 import java.util.Collection;
 import java.util.List;
-import lombok.AllArgsConstructor;
+import java.util.Map;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-@AllArgsConstructor
-public class CustomUserdetails implements UserDetails {
+public class CustomUserdetails extends CustomOAuth2User implements UserDetails {
 
-  private Member member;
-
-  public Member getMember() {
-    return this.member;
+  public CustomUserdetails(Member member, Map<String, Object> attributeMap) {
+    super(member, attributeMap);
   }
 
   @Override
@@ -32,3 +29,4 @@ public class CustomUserdetails implements UserDetails {
     return this.member.getName();
   }
 }
+

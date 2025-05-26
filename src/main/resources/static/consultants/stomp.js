@@ -4,10 +4,11 @@ const stompClient = new StompJs.Client({
 
 stompClient.onConnect = (frame) => {
   setConnected(true);
-  showChatRooms();
-  stompClient.subscribe('/sub/chats/news',
+  showChatRooms(0);
+  stompClient.subscribe('/sub/chats/updates',
       (chatMessage) => {
-        toggleNewMessageIcon(JSON.parse(chatMessage.body), true)
+        toggleNewMessageIcon(JSON.parse(chatMessage.body).id, true)
+        updateMemberCount(JSON>parse(chatMessage.body))
       });
   console.log('Connected: ' + frame);
   stompClient.subscribe('/sub/chats', (chatMessage) => {
@@ -20,7 +21,14 @@ stompClient.onConnect = (frame) => {
   })
 };
 
+function updateMemberCount(chatroom){
+  $('#memberCount_' + chatroom.id).html(chatroom.memberCount);
+}
+
 function toggleNewMessageIcon(chatRoomId, toggle) {
+  if(chatRoomId == $('#chatroom-id').val()){
+    return;
+  }
   if (toggle){
     $("#new_" + chatRoomId).show();
   }else{
@@ -83,7 +91,7 @@ function createChatRoom() {
     url: '/chats?title=' + $("#chatroom-title").val(),
     success: function(data) {
       console.log('data: ', data);
-      showChatRooms();
+      showChatRooms(0);
       enterChatRoom(data.id, true);
     },
     error: function(request, status, error) {
@@ -93,11 +101,11 @@ function createChatRoom() {
   })
 }
 
-function showChatRooms() {
+function showChatRooms(pageNumber) {
   $.ajax({
     type: 'GET',
     dataType: 'json',
-    url: '/chats',
+    url: '/consultants/chats?sorts=id,desc&page=' + pageNumber,
     success: function(data) {
       console.log('data: ', data);
       renderChatRoom(data);
@@ -109,16 +117,29 @@ function showChatRooms() {
   })
 }
 
-function renderChatRoom(chatrooms) {
+function renderChatRoom(page) {
+  let chatrooms = page.content;
   $("#chatroom-list").html("");
   for (let i = 0; i < chatrooms.length; i++) {
     $("#chatroom-list").append(
         "<tr onclick= 'joinChatRoom(" + chatrooms[i].id + ")'><td>"
         +chatrooms[i].id + "</td><td>" + chatrooms[i].title + "<img src='new.png' id='new_" + chatrooms[i].id +"' style='display: "
-        + getDisplayValue(chatrooms[i].hasNewMessage) + "'</td><td>"
+        + getDisplayValue(chatrooms[i].hasNewMessage) + "'</td><td id='memberCount_"+ chatrooms[i].id + "'>"
         +chatrooms[i].memberCount + "</td><td>" + chatrooms[i].createdAt
         + "</td></tr>"
     );
+  }
+
+  if(page.first){
+    $('#prev').prop("disabled", true);
+  }else{
+    $('#prev').prop("disabled", false).click(() => showChatRooms(page.number - 1));
+  }
+
+  if(page.last){
+    $('#next').prop("disabled", true);
+  }else{
+    $('#next').prop("disabled", false).click(() => showChatRooms(page.number + 1));
   }
 }
 
@@ -209,7 +230,7 @@ function leaveChatRoom() {
     url: '/chats/' + chatRoomId,
     success: function(data){
       console.log('data: ', data);
-      showChatRooms()
+      showChatRooms(0)
       exitChatRoom(chatRoomId);
     },
     error: function (request, status, error) {

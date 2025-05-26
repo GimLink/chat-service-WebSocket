@@ -1,5 +1,6 @@
 package chat_service.service;
 
+import chat_service.dto.ChatRoomDto;
 import chat_service.entities.ChatRoom;
 import chat_service.entities.Member;
 import chat_service.entities.MemberChatRoomMapping;
@@ -106,6 +107,11 @@ public class ChatService {
 
   public List<Message> getMessagesList(Long chatRoomId){
     return messageRepository.findAllByChatRoomId(chatRoomId);
+  }
+  @Transactional(readOnly = true)
+  public ChatRoomDto getChatRoom(Long chatRoomId){
+    ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId).get();
+    return ChatRoomDto.fromEntity(chatRoom);
   }
 
 }
