@@ -8,7 +8,7 @@ stompClient.onConnect = (frame) => {
   stompClient.subscribe('/sub/chats/updates',
       (chatMessage) => {
         toggleNewMessageIcon(JSON.parse(chatMessage.body).id, true)
-        updateMemberCount(JSON>parse(chatMessage.body))
+        updateMemberCount(JSON.parse(chatMessage.body))
       });
   console.log('Connected: ' + frame);
   stompClient.subscribe('/sub/chats', (chatMessage) => {
